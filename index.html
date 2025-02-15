@@ -1,441 +1,71 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Text Editor</title>
-
-    <!-- Import Google Fonts and Material Icons -->
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Montserrat:wght@400;700&family=Open+Sans:wght@400;700&family=Lora:wght@400;700&display=swap" rel="stylesheet">
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background: #f9f9f9;
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            height: 100vh;
-            padding: 10px;
-            transition: background 0.3s, color 0.3s;
-        }
-
-        #editor-container {
-            width: 100%;
-            max-width: 100%;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        #toolbar {
-            display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin: 10px 20px;
-            padding: 10px;
-            background: #fff;
-            border-radius: 8px;
-            transition: background 0.3s, color 0.3s;
-        }
-
-        .toolbar-left, .toolbar-right {
-            display: flex;
-            gap: 10px;
-        }
-        
-        button {
-            width: auto;
-            padding-left: 10px;
-            padding-right: 10px;
-            height: 40px;
-            cursor: pointer;
-            border: none;
-            background: #fff;
-            font-size: 16px;
-            border-radius: 5px;
-            transition: background 0.2s, color 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        button:hover {
-            background: #e2e2e2;
-        }
-
-        .material-symbols-outlined {
-            font-size: 24px;
-        }
-
-        #font-selector {
-            width: 180px;
-            height: 40px;
-            background: #f9f9f9;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-
-        .color-picker-container {
-            position: relative;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: black;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-        }
-
-        .color-picker-container span {
-            color: white;
-            font-size: 20px;
-        }
-
-        .color-picker {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            opacity: 0;
-            cursor: pointer;
-        }
-
-        #editor {
-            flex-grow: 1;
-            width: 100%;
-            max-width: 100%;
-            margin: 0 auto;
-            padding: 20px;
-            font-size: 16px;
-            background: #fff;
-            border-radius: 5px;
-            color: #333;
-            font-family: 'Roboto', sans-serif;
-            overflow-y: auto;
-            min-height: 200px;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            border: none;
-        }
-
-        #editor-content {
-            max-width: 800px;
-            width: 100%;
-            text-align: left;
-            padding: 20px;
-            min-height: 100%;
-            outline: none;
-            border: none;
-            font-family: 'Roboto', sans-serif;
-            color: #333;
-        }
-
-        #editor-content:empty:before {
-            content: "Start typing here...";
-            color: #aaa;
-            font-style: italic;
-            pointer-events: none;
-        }
-
-        .dark-mode {
-            background: #222;
-            color: #fff;
-        }
-
-        .dark-mode #toolbar {
-            background: #333;
-        }
-
-        .dark-mode #editor {
-            background: #444;
-            color: #fff;
-        }
-
-        .dark-mode #editor-content {
-            color: white;
-        }
-/* Contador de caracteres y palabras dentro del área de escritura */
-#counter {
-    position: absolute;
-    top: 10px; /* Espaciado debajo de la toolbar */
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 14px;
-    color: #aaa;
-    background: rgba(255, 255, 255, 0.8);
-    padding: 5px 10px;
-    border-radius: 5px;
-    pointer-events: none;
-}
-
-/* Ajustar el editor para dar espacio al contador */
-#editor {
-    position: relative;
-    padding-top: 40px; /* Espacio para el contador dentro del área de escritura */
-}
-
-/* Modo oscuro - Ajuste del contador */
-.dark-mode #counter {
-    background: rgba(50, 50, 50, 0.8);
-    color: #bbb;
-}
-/* Estilo para el selector de tamaño de fuente */
-#font-size-selector {
-    width: 80px;
-    height: 40px;
-    background: #f9f9f9;
-    border: none;
-    border-radius: 5px;
-    font-size: 16px;
-    cursor: pointer;
-    text-align: center;
-}
-
-/* Modo oscuro - Ajuste del selector */
-.dark-mode #font-size-selector {
-    background: #333;
-    color: #fff;
-}
-/* MODO SIN DISTRACCIONES - Oculta la barra de herramientas */
-.no-distraction-mode #toolbar {
-    display: none;
-}
-
-/* Ajustar el área de escritura cuando la barra de herramientas está oculta */
-.no-distraction-mode #editor {
-    height: calc(100vh - 20px); /* Ajusta la altura al 100% */
-}
-
-/* Botón para salir del modo sin distracciones */
-#exit-distraction-mode {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: none;
-    color: #333;
-    padding: 5px 10px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 14px;
-    display: none; /* Se oculta en modo normal */
-}
-
-.no-distraction-mode #exit-distraction-mode {
-    display: block;
-}
-#exit-distraction-mode:hover {
-  background: #f9f9f9;
-}
-/* Modo oscuro - Ajustes */
-.dark-mode #exit-distraction-mode {
-    background: rgba(100, 100, 100, 0.7);
-    color: #fff;
-}
-
-/* LINEA SEPARADORA
-/* Estilo para la línea separadora */
-#editor-content hr {
-    border: none;
-    height: 1px;
-    background: #ccc; /* Color gris */
-    margin: 10px 0;
-}
-
-/* Modo oscuro - Ajuste de la línea */
-.dark-mode #editor-content hr {
-    background: #666;
-}
-/*LOGOTIPO INFERIOR
-/* Estilo del logotipo en la esquina inferior izquierda */
-#fixed-logo {
-    position: fixed;
-    bottom: 30px;
-    left: 30px;
-    width: 60px;  /* Tamaño del logo */
-    height: 60px;
-    cursor: pointer;
-    z-index: 1000; /* Asegura que esté por encima de otros elementos */
-    opacity: 0.8;
-    transition: opacity 0.3s, transform 0.3s;
-}
-
-#fixed-logo:hover {
-    opacity: 1;
-    transform: scale(1.1); /* Pequeña animación al pasar el cursor */
-}
-
-
-
-    </style>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>RobinPad</title>
+	<meta name="title" content="TextPad">
+	<meta name="description" content="A simple online notepad, no WYSIWYG, no fancy stuff, just write. The text will live in your browser until you decide to delete or download it.">
+	<meta name="author" content="Paulo Nunes - syndicatefx.com">
+	<link href="app.css" rel="stylesheet">
 </head>
 <body>
-    <div id="editor-container">
-      
-        <div id="toolbar">
-            <div class="toolbar-left">
-                <button onclick="formatText('bold')"><span class="material-symbols-outlined">format_bold</span></button>
-                <button onclick="formatText('italic')"><span class="material-symbols-outlined">format_italic</span></button>
-                <button onclick="formatText('underline')"><span class="material-symbols-outlined">format_underlined</span></button>
-                <button onclick="insertHorizontalLine()"><span class="material-symbols-outlined">horizontal_rule</span></button>
-                <button onclick="removeFormatting()"><span class="material-symbols-outlined">format_clear</span></button>
-                <div class="color-picker-container">
-                    <span class="material-symbols-outlined">brush</span>
-                    <input type="color" class="color-picker" onchange="changeTextColor(this.value)">
-                </div>
-                <select id="font-selector" onchange="changeFont()">
-                    <option value="Roboto" selected>Roboto</option>
-                    <option value="Montserrat">Montserrat</option>
-                    <option value="Open Sans">Open Sans</option>
-                    <option value="Lora">Lora</option>
-                </select>
-                <select id="font-size-selector" onchange="changeSelectedTextSize()">
-    <option value="12px">12</option>
-    <option value="14px" selected>14</option>
-    <option value="16px">16</option>
-    <option value="18px">18</option>
-    <option value="20px">20</option>
-    <option value="24px">24</option>
-    <option value="28px">28</option>
-    <option value="32px">32</option>
-    <option value="36px">36</option>
-    <option value="40px">40</option>
-</select>
-            </div>
+<svg style="position: absolute; width: 0; height: 0; overflow: hidden;" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><symbol id="icon-delete" viewBox="0 0 24 24"><title>delete</title><path d="M6 19c0 1.105 0.895 2 2 2h8c1.105 0 2-0.895 2-2v-12h-12v12zM19 4h-3.5l-1-1h-5l-1 1h-3.5v2h14v-2z"></path></symbol><symbol id="icon-info-outline" viewBox="0 0 24 24"><title>info-outline</title><path d="M11 17h2v-6h-2v6zM12 2c-5.525 0-10 4.475-10 10s4.475 10 10 10 10-4.475 10-10-4.475-10-10-10zM12 20c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zM11 9h2v-2h-2v2z"></path></symbol><symbol id="icon-invert-colors" viewBox="0 0 24 24"><title>invert-colors</title><path d="M17.655 7.93l-5.655-5.66-5.655 5.66c-3.125 3.125-3.125 8.19 0 11.315 1.56 1.56 3.61 2.345 5.655 2.345s4.095-0.78 5.655-2.345c3.125-3.125 3.125-8.19 0-11.315zM12 19.585c-1.605 0-3.11-0.625-4.24-1.76-1.135-1.13-1.76-2.635-1.76-4.24s0.625-3.11 1.76-4.245l4.24-4.24v14.485z"></path></symbol><symbol id="icon-file-download" viewBox="0 0 24 24"><title>file-download</title><path d="M19 9h-4v-6h-6v6h-4l7 7 7-7zM5 18v2h14v-2h-14z"></path></symbol><symbol id="icon-settings" viewBox="0 0 24 24"><title>settings</title><path d="M19.43 12.975c0.040-0.32 0.070-0.645 0.070-0.975s-0.030-0.655-0.070-0.975l2.115-1.655c0.19-0.15 0.245-0.42 0.12-0.64l-2-3.465c-0.125-0.215-0.385-0.305-0.61-0.215l-2.49 1.005c-0.515-0.395-1.080-0.73-1.69-0.985l-0.375-2.65c-0.045-0.235-0.25-0.42-0.5-0.42h-4c-0.25 0-0.455 0.185-0.495 0.42l-0.375 2.65c-0.61 0.255-1.175 0.585-1.69 0.985l-2.49-1.005c-0.225-0.085-0.485 0-0.61 0.215l-2 3.465c-0.125 0.215-0.070 0.485 0.12 0.64l2.11 1.655c-0.040 0.32-0.070 0.645-0.070 0.975s0.030 0.655 0.070 0.975l-2.11 1.655c-0.19 0.15-0.245 0.42-0.12 0.64l2 3.465c0.125 0.215 0.385 0.305 0.61 0.215l2.49-1.005c0.515 0.395 1.080 0.73 1.69 0.985l0.375 2.65c0.040 0.235 0.245 0.42 0.495 0.42h4c0.25 0 0.455-0.185 0.495-0.42l0.375-2.65c0.61-0.255 1.175-0.585 1.69-0.985l2.49 1.005c0.225 0.085 0.485 0 0.61-0.215l2-3.465c0.125-0.215 0.070-0.485-0.12-0.64l-2.11-1.655zM12 15.5c-1.935 0-3.5-1.565-3.5-3.5s1.565-3.5 3.5-3.5 3.5 1.565 3.5 3.5-1.565 3.5-3.5 3.5z"></path></symbol><symbol id="icon-refresh" viewBox="0 0 24 24"><title>refresh</title><path d="M17.65 6.35c-1.445-1.45-3.44-2.35-5.65-2.35-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.725 0 6.845-2.55 7.73-6h-2.080c-0.825 2.33-3.035 4-5.65 4-3.315 0-6-2.685-6-6s2.685-6 6-6c1.655 0 3.14 0.69 4.225 1.775l-3.225 3.225h7v-7l-2.35 2.35z"></path></symbol><symbol id="icon-format-size" viewBox="0 0 24 24"><title>format-size</title><path d="M9 4v3h5v12h3v-12h5v-3h-13zM3 12h3v7h3v-7h3v-3h-9v3z"></path></symbol><symbol id="icon-format-line-spacing" viewBox="0 0 24 24"><title>format-line-spacing</title><path d="M6 7h2.5l-3.5-3.5-3.5 3.5h2.5v10h-2.5l3.5 3.5 3.5-3.5h-2.5v-10zM10 5v2h12v-2h-12zM10 19h12v-2h-12v2zM10 13h12v-2h-12v2z"></path></symbol><symbol id="icon-wrap-text" viewBox="0 0 24 24"><title>wrap-text</title><path d="M4 19h6v-2h-6v2zM20 5h-16v2h16v-2zM17 11h-13v2h13.25c1.105 0 2 0.895 2 2s-0.895 2-2 2h-2.25v-2l-3 3 3 3v-2h2c2.205 0 4-1.795 4-4s-1.795-4-4-4z"></path></symbol><symbol id="logo" viewBox="0 0 48 48"><title>TextPad</title><path d="M12 1c-1.5 0-2.2 1.5-2 2.7V5H4C2.6 5 1.7 6.4 2 7.7v37.5c0 1.4 1.7 2 3 1.8H44c1.4 0 2-1.7 1.8-3V7c0-1.4-1.7-2-3-1.8h-5V2.4c-.3-.8-1.2-1.5-2-1.4-1.5 0-2.2 1.5-2 2.7V5h-8V2.4c-.3-.8-1.2-1.5-2-1.4-1.5 0-2.2 1.5-2 2.7V5h-8V2.4c-.3-.8-1.2-1.5-2-1.4zM6 9h4v4.4c.3 1.8 3 2.2 3.8.5.4-1.6 0-3.2.2-4.7V9h8v4.4c.3 1.8 3 2.2 3.8.5.4-1.6 0-3.2.2-4.7V9h8v4.4c.3 1.8 3 2.2 3.8.5.4-1.6 0-3.2.2-4.7V9h4v34H6V9zm28.6 10H11.8c-1.8 0-2.6 2.7-1 3.7 1.2.6 2.8.2 4 .3h21.6c1.8-.3 2.2-3 .5-3.8-.8-.2-1.6-.2-2.4-.2zm0 8H11.8c-1.8 0-2.6 2.7-1 3.7 1.2.6 2.8.2 4 .3h21.6c1.8-.3 2.2-3 .5-3.8-.8-.2-1.6-.2-2.4-.2zm0 8H11.8c-1.8 0-2.6 2.7-1 3.7 1.2.6 2.8.2 4 .3h21.6c1.8-.3 2.2-3 .5-3.8-.8-.2-1.6-.2-2.4-.2z"/></symbol></defs></svg>
 
-            <div class="toolbar-right">
-                <button onclick="copyText()"><span class="material-symbols-outlined">content_copy</span></button>
-                <button onclick="downloadText()"><span class="material-symbols-outlined">download</span> TXT</button>
-                <button onclick="downloadPDF()"><span class="material-symbols-outlined">download</span> PDF</button>
-                <button onclick="toggleDarkMode()"><span class="material-symbols-outlined">dark_mode</span></button>
-                <button onclick="toggleDistractionFreeMode()"><span class="material-symbols-outlined">Expand_Content</span></button>
+<header role="banner">
+	<div id="logo"></div>
+	<nav>
+		<input id="fileName" type="text" placeholder="File Name Here...">
+		<div class="btn-group">
+			<button id="save" class="save-btn" title="Save/Download"><svg><use xlink:href="#icon-file-download"></use></svg></button>
+			<button id="clear" class="clear-btn" title="Clear/Delete"><svg><use xlink:href="#icon-delete"></use></svg></button>
+			<button id="settings" class="settings-btn" title="Toggle Settings"><svg><use xlink:href="#icon-settings"></use></svg></button>
+		</div>
+		<div id="setMenu" class="settings-menu">
+			<ul>
+				<li class="settings-menu__item">
+					<svg><use xlink:href="#icon-format-size"></use></svg>
+					<input type="range" min="1" max="2" value="1" id="fs" step="0.1" title="Text size">
+				</li>
+				<li class="settings-menu__item">
+					<svg><use xlink:href="#icon-format-line-spacing"></use></svg>
+					<input type="range" min="1" max="3" value="1.9" id="lh" step="0.1" title="Line Height">
+				</li>
+				<li class="settings-menu__item">
+					<svg><use xlink:href="#icon-wrap-text"></use></svg>
+					<input type="range" min="1" max="32" value="16" id="lw" step="1" title="Line Width">
+				</li>
+				<li class="settings-menu__item">
+					<button id="theme" title="Toggle Theme"><svg><use xlink:href="#icon-invert-colors"></use></svg></button>
+					<button id="reset" title="Reset to Defaults"><svg><use xlink:href="#icon-refresh"></use></svg></button>
+				</li>
+			</ul>
+		</div>
+	</nav>
+</header>
 
-                <button onclick="clearText()"><span class="material-symbols-outlined">delete</span></button>
-            </div>
-        </div>
+<div id="homepage" class="overlay" role="main">
+	<section>
+		<img src="imgs/logo_icon.jpg">
+		<h1>RobinPad</h1>
+		<p>I'm Roberto Nieto, designer and art director who create the RobinPad branding.<br> I'm not programmer, and I used the code of TextPad app (source code link below), a free and opensource web application to write.<br> RobinPad is a branding exercise. I want to create a real, but basic, tool to start. <br> <a href="https://www.robertonieto.com/contacto">Contact me</a></p>
+		<button id="start">Continue Writing</button>
+		<p class="footnote">source code on <a href="https://github.com/syndicatefx/textpad">Github</a></p>
+	</section>
+</div>
 
-        <div id="editor">
-          <div id="exit-distraction-mode" onclick="toggleDistractionFreeMode()"><span class="material-symbols-outlined">Collapse_Content</span></div>
-            <div id="counter">Characters: 0 | Words: 0</div>
-            <div id="editor-content" contenteditable="true"></div>
-        </div>
+<textarea id="fileContent" placeholder="Welcome to RobinPad, just start writing here..." spellcheck="true"></textarea>
 
-    </div>
+<footer role="contentinfo">
+	<button id="info" class="info-btn" title="Info"><svg><use xlink:href="#icon-info-outline"></use></svg></button>
+	<ul class="counter">
+		<li id="charCounter"></li>
+		<li id="wordCounter"></li>
+	</ul>
+</footer>
 
-    <script>
-      
-document.getElementById("editor-content").addEventListener("input", updateCounter);
+<script src="app.js"></script>
 
-        function formatText(command) {
-            document.execCommand(command, false, null);
-        }
-
-        function removeFormatting() {
-            document.execCommand('removeFormat', false, null);
-        }
-
-        function changeTextColor(color) {
-            document.execCommand("foreColor", false, color);
-        }
-
-        function changeFont() {
-            let selectedFont = document.getElementById("font-selector").value;
-            document.getElementById("editor-content").style.fontFamily = selectedFont;
-        }
-
-        function toggleDarkMode() {
-            document.body.classList.toggle("dark-mode");
-        }
-
-        function clearText() {
-            document.getElementById("editor-content").innerHTML = "";
-        }
-
-        function copyText() {
-            navigator.clipboard.writeText(document.getElementById("editor-content").innerText);
-        }
-
-        function downloadText() {
-            const text = document.getElementById("editor-content").innerText;
-            const blob = new Blob([text], { type: "text/plain" });
-            const a = document.createElement("a");
-            a.href = URL.createObjectURL(blob);
-            a.download = "document.txt";
-            a.click();
-        }
-
-        function downloadPDF() {
-            const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF();
-            pdf.text(document.getElementById("editor-content").innerText, 10, 10);
-            pdf.save("document.pdf");
-        }
-        
-function updateCounter() {
-    const editorContent = document.getElementById("editor-content").innerText;
-    const charCount = editorContent.length;
-    const wordCount = editorContent.trim().split(/\s+/).filter(word => word.length > 0).length;
-    document.getElementById("counter").innerText = `Characters: ${charCount} | Words: ${wordCount}`;
-}
-
-document.getElementById("editor-content").addEventListener("input", updateCounter);
-
-  // Función para guardar el contenido en LocalStorage
-    function saveToLocalStorage() {
-        localStorage.setItem("editorContent", document.getElementById("editor-content").innerHTML);
-    }
-
-    // Función para cargar el contenido guardado en LocalStorage
-    function loadFromLocalStorage() {
-        let savedContent = localStorage.getItem("editorContent");
-        if (savedContent) {
-            document.getElementById("editor-content").innerHTML = savedContent;
-        }
-    }
-
-    // Escucha los cambios en el editor y guarda automáticamente
-    document.getElementById("editor-content").addEventListener("input", saveToLocalStorage);
-
-    // Cargar el contenido al iniciar la página
-    window.addEventListener("load", loadFromLocalStorage);
-    
-    // Cambiar tamaño texto
-function changeSelectedTextSize() {
-    let selectedSize = document.getElementById("font-size-selector").value;
-    document.execCommand("fontSize", false, "7"); // Usa tamaño 7 como marcador
-    let fontElements = document.querySelectorAll("font[size='7']");
-    fontElements.forEach(el => {
-        el.removeAttribute("size"); // Elimina el atributo default
-        el.style.fontSize = selectedSize; // Aplica el tamaño seleccionado
-    });
-}
-// MODO SIN distracciones
-function toggleDistractionFreeMode() {
-    document.body.classList.toggle("no-distraction-mode");
-}
-// LINEA separadora
-function insertHorizontalLine() {
-    document.execCommand("insertHorizontalRule", false, null);
-}
-
-
-
-    </script>
-  <a href="https://tusitio.com" target="_blank">
-    <img id="fixed-logo" src="https://raw.githubusercontent.com/syntetyc/robinpad/11086b74416bf29d3212bdb6005438b6c4032257/robinpad-logo.svg" alt="Logo">
-</a>
 </body>
 </html>
