@@ -259,6 +259,26 @@
 .dark-mode #editor-content hr {
     background: #666;
 }
+/*LOGOTIPO INFERIOR
+/* Estilo del logotipo en la esquina inferior izquierda */
+#fixed-logo {
+    position: fixed;
+    bottom: 30px;
+    left: 30px;
+    width: 60px;  /* Tamaño del logo */
+    height: 60px;
+    cursor: pointer;
+    z-index: 1000; /* Asegura que esté por encima de otros elementos */
+    opacity: 0.8;
+    transition: opacity 0.3s, transform 0.3s;
+}
+
+#fixed-logo:hover {
+    opacity: 1;
+    transform: scale(1.1); /* Pequeña animación al pasar el cursor */
+}
+
+
 
     </style>
 </head>
@@ -411,6 +431,11 @@ function insertHorizontalLine() {
     document.execCommand("insertHorizontalRule", false, null);
 }
 
+
+
     </script>
+  <a href="https://tusitio.com" target="_blank">
+    <img id="fixed-logo" src="https://raw.githubusercontent.com/syntetyc/robinpad/11086b74416bf29d3212bdb6005438b6c4032257/robinpad-logo.svg" alt="Logo">
+</a>
 </body>
 </html>
