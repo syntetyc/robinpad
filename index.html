@@ -246,6 +246,20 @@
     color: #fff;
 }
 
+/* LINEA SEPARADORA
+/* Estilo para la línea separadora */
+#editor-content hr {
+    border: none;
+    height: 1px;
+    background: #ccc; /* Color gris */
+    margin: 10px 0;
+}
+
+/* Modo oscuro - Ajuste de la línea */
+.dark-mode #editor-content hr {
+    background: #666;
+}
+
     </style>
 </head>
 <body>
@@ -256,6 +270,7 @@
                 <button onclick="formatText('bold')"><span class="material-symbols-outlined">format_bold</span></button>
                 <button onclick="formatText('italic')"><span class="material-symbols-outlined">format_italic</span></button>
                 <button onclick="formatText('underline')"><span class="material-symbols-outlined">format_underlined</span></button>
+                <button onclick="insertHorizontalLine()"><span class="material-symbols-outlined">horizontal_rule</span></button>
                 <button onclick="removeFormatting()"><span class="material-symbols-outlined">format_clear</span></button>
                 <div class="color-picker-container">
                     <span class="material-symbols-outlined">brush</span>
@@ -390,6 +405,10 @@ function changeSelectedTextSize() {
 // MODO SIN distracciones
 function toggleDistractionFreeMode() {
     document.body.classList.toggle("no-distraction-mode");
+}
+// LINEA separadora
+function insertHorizontalLine() {
+    document.execCommand("insertHorizontalRule", false, null);
 }
 
     </script>
