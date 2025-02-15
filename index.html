@@ -193,8 +193,58 @@
     background: rgba(50, 50, 50, 0.8);
     color: #bbb;
 }
+/* Estilo para el selector de tamaño de fuente */
+#font-size-selector {
+    width: 80px;
+    height: 40px;
+    background: #f9f9f9;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    text-align: center;
+}
 
+/* Modo oscuro - Ajuste del selector */
+.dark-mode #font-size-selector {
+    background: #333;
+    color: #fff;
+}
+/* MODO SIN DISTRACCIONES - Oculta la barra de herramientas */
+.no-distraction-mode #toolbar {
+    display: none;
+}
 
+/* Ajustar el área de escritura cuando la barra de herramientas está oculta */
+.no-distraction-mode #editor {
+    height: calc(100vh - 20px); /* Ajusta la altura al 100% */
+}
+
+/* Botón para salir del modo sin distracciones */
+#exit-distraction-mode {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    color: #333;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    display: none; /* Se oculta en modo normal */
+}
+
+.no-distraction-mode #exit-distraction-mode {
+    display: block;
+}
+#exit-distraction-mode:hover {
+  background: #f9f9f9;
+}
+/* Modo oscuro - Ajustes */
+.dark-mode #exit-distraction-mode {
+    background: rgba(100, 100, 100, 0.7);
+    color: #fff;
+}
 
     </style>
 </head>
@@ -217,6 +267,18 @@
                     <option value="Open Sans">Open Sans</option>
                     <option value="Lora">Lora</option>
                 </select>
+                <select id="font-size-selector" onchange="changeSelectedTextSize()">
+    <option value="12px">12</option>
+    <option value="14px" selected>14</option>
+    <option value="16px">16</option>
+    <option value="18px">18</option>
+    <option value="20px">20</option>
+    <option value="24px">24</option>
+    <option value="28px">28</option>
+    <option value="32px">32</option>
+    <option value="36px">36</option>
+    <option value="40px">40</option>
+</select>
             </div>
 
             <div class="toolbar-right">
@@ -224,11 +286,14 @@
                 <button onclick="downloadText()"><span class="material-symbols-outlined">download</span> TXT</button>
                 <button onclick="downloadPDF()"><span class="material-symbols-outlined">download</span> PDF</button>
                 <button onclick="toggleDarkMode()"><span class="material-symbols-outlined">dark_mode</span></button>
+                <button onclick="toggleDistractionFreeMode()"><span class="material-symbols-outlined">Expand_Content</span></button>
+
                 <button onclick="clearText()"><span class="material-symbols-outlined">delete</span></button>
             </div>
         </div>
 
         <div id="editor">
+          <div id="exit-distraction-mode" onclick="toggleDistractionFreeMode()"><span class="material-symbols-outlined">Collapse_Content</span></div>
             <div id="counter">Characters: 0 | Words: 0</div>
             <div id="editor-content" contenteditable="true"></div>
         </div>
@@ -292,6 +357,40 @@ function updateCounter() {
 }
 
 document.getElementById("editor-content").addEventListener("input", updateCounter);
+
+  // Función para guardar el contenido en LocalStorage
+    function saveToLocalStorage() {
+        localStorage.setItem("editorContent", document.getElementById("editor-content").innerHTML);
+    }
+
+    // Función para cargar el contenido guardado en LocalStorage
+    function loadFromLocalStorage() {
+        let savedContent = localStorage.getItem("editorContent");
+        if (savedContent) {
+            document.getElementById("editor-content").innerHTML = savedContent;
+        }
+    }
+
+    // Escucha los cambios en el editor y guarda automáticamente
+    document.getElementById("editor-content").addEventListener("input", saveToLocalStorage);
+
+    // Cargar el contenido al iniciar la página
+    window.addEventListener("load", loadFromLocalStorage);
+    
+    // Cambiar tamaño texto
+function changeSelectedTextSize() {
+    let selectedSize = document.getElementById("font-size-selector").value;
+    document.execCommand("fontSize", false, "7"); // Usa tamaño 7 como marcador
+    let fontElements = document.querySelectorAll("font[size='7']");
+    fontElements.forEach(el => {
+        el.removeAttribute("size"); // Elimina el atributo default
+        el.style.fontSize = selectedSize; // Aplica el tamaño seleccionado
+    });
+}
+// MODO SIN distracciones
+function toggleDistractionFreeMode() {
+    document.body.classList.toggle("no-distraction-mode");
+}
 
     </script>
 </body>
