@@ -9,6 +9,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Montserrat:wght@400;700&family=Open+Sans:wght@400;700&family=Lora:wght@400;700&display=swap" rel="stylesheet">
     
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
     <style>
         * {
             margin: 0;
@@ -95,7 +97,7 @@
             appearance: none;
         }
 
-        /* Color Picker Button */
+        /* Selector de color redondo */
         .color-picker-container {
             position: relative;
             width: 40px;
@@ -121,6 +123,16 @@
             height: 100%;
             opacity: 0;
             cursor: pointer;
+        }
+
+        /* Botones de descarga ajustados */
+        .download-button {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 15px;
+            width: auto;
+            min-width: 80px;
         }
 
         #editor {
@@ -229,29 +241,25 @@
     </div>
 
     <script>
-        function formatText(command) {
-            document.execCommand(command, false, null);
+        function copyText() {
+            navigator.clipboard.writeText(document.getElementById("editor-content").innerText);
+            alert("Text copied!");
         }
 
-        function removeFormatting() {
-            document.execCommand('removeFormat', false, null);
+        function downloadText() {
+            const text = document.getElementById("editor-content").innerText;
+            const blob = new Blob([text], { type: "text/plain" });
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = "document.txt";
+            a.click();
         }
 
-        function changeTextColor(color) {
-            document.execCommand("foreColor", false, color);
-        }
-
-        function changeFont() {
-            let selectedFont = document.getElementById("font-selector").value;
-            document.getElementById("editor-content").style.fontFamily = selectedFont;
-        }
-
-        function toggleDarkMode() {
-            document.body.classList.toggle("dark-mode");
-        }
-
-        function clearText() {
-            document.getElementById("editor-content").innerHTML = "";
+        function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF();
+            pdf.text(document.getElementById("editor-content").innerText, 10, 10);
+            pdf.save("document.pdf");
         }
     </script>
 </body>
