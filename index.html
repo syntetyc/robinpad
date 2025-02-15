@@ -168,10 +168,39 @@
         .dark-mode #editor-content {
             color: white;
         }
+/* Contador de caracteres y palabras dentro del área de escritura */
+#counter {
+    position: absolute;
+    top: 10px; /* Espaciado debajo de la toolbar */
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 14px;
+    color: #aaa;
+    background: rgba(255, 255, 255, 0.8);
+    padding: 5px 10px;
+    border-radius: 5px;
+    pointer-events: none;
+}
+
+/* Ajustar el editor para dar espacio al contador */
+#editor {
+    position: relative;
+    padding-top: 40px; /* Espacio para el contador dentro del área de escritura */
+}
+
+/* Modo oscuro - Ajuste del contador */
+.dark-mode #counter {
+    background: rgba(50, 50, 50, 0.8);
+    color: #bbb;
+}
+
+
+
     </style>
 </head>
 <body>
     <div id="editor-container">
+      
         <div id="toolbar">
             <div class="toolbar-left">
                 <button onclick="formatText('bold')"><span class="material-symbols-outlined">format_bold</span></button>
@@ -200,11 +229,16 @@
         </div>
 
         <div id="editor">
+            <div id="counter">Characters: 0 | Words: 0</div>
             <div id="editor-content" contenteditable="true"></div>
         </div>
+
     </div>
 
     <script>
+      
+document.getElementById("editor-content").addEventListener("input", updateCounter);
+
         function formatText(command) {
             document.execCommand(command, false, null);
         }
@@ -249,6 +283,16 @@
             pdf.text(document.getElementById("editor-content").innerText, 10, 10);
             pdf.save("document.pdf");
         }
+        
+function updateCounter() {
+    const editorContent = document.getElementById("editor-content").innerText;
+    const charCount = editorContent.length;
+    const wordCount = editorContent.trim().split(/\s+/).filter(word => word.length > 0).length;
+    document.getElementById("counter").innerText = `Characters: ${charCount} | Words: ${wordCount}`;
+}
+
+document.getElementById("editor-content").addEventListener("input", updateCounter);
+
     </script>
 </body>
 </html>
