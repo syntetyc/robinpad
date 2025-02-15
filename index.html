@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Text Editor</title>
-    
+
     <!-- Import Google Fonts and Material Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Montserrat:wght@400;700&family=Open+Sans:wght@400;700&family=Lora:wght@400;700&display=swap" rel="stylesheet">
-    
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
     <style>
@@ -25,7 +25,6 @@
             flex-direction: column;
             align-items: center;
             height: 100vh;
-            overflow: hidden;
             padding: 10px;
             transition: background 0.3s, color 0.3s;
         }
@@ -36,7 +35,6 @@
             height: 100vh;
             display: flex;
             flex-direction: column;
-            text-align: center;
         }
 
         #toolbar {
@@ -45,7 +43,7 @@
             flex-wrap: wrap;
             gap: 10px;
             margin: 10px 20px;
-            padding: 10px 20px;
+            padding: 10px;
             background: #fff;
             border-radius: 8px;
             transition: background 0.3s, color 0.3s;
@@ -54,13 +52,11 @@
         .toolbar-left, .toolbar-right {
             display: flex;
             gap: 10px;
-            flex-wrap: wrap;
         }
 
         button {
             width: 40px;
             height: 40px;
-            padding: 0;
             cursor: pointer;
             border: none;
             background: #fff;
@@ -76,11 +72,6 @@
             background: #e2e2e2;
         }
 
-        button.active {
-            background: #000 !important;
-            color: #fff !important;
-        }
-
         .material-symbols-outlined {
             font-size: 24px;
         }
@@ -88,16 +79,13 @@
         #font-selector {
             width: 180px;
             height: 40px;
-            padding: 5px 10px;
             background: #f9f9f9;
             border: none;
             border-radius: 5px;
             font-size: 16px;
             cursor: pointer;
-            appearance: none;
         }
 
-        /* Selector de color redondo */
         .color-picker-container {
             position: relative;
             width: 40px;
@@ -108,13 +96,11 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            overflow: hidden;
         }
 
         .color-picker-container span {
             color: white;
             font-size: 20px;
-            pointer-events: none;
         }
 
         .color-picker {
@@ -125,16 +111,6 @@
             cursor: pointer;
         }
 
-        /* Botones de descarga ajustados */
-        .download-button {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            padding: 5px 15px;
-            width: auto;
-            min-width: 80px;
-        }
-
         #editor {
             flex-grow: 1;
             width: 100%;
@@ -143,7 +119,6 @@
             padding: 20px;
             font-size: 16px;
             background: #fff;
-            box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
             border-radius: 5px;
             color: #333;
             font-family: 'Roboto', sans-serif;
@@ -153,8 +128,6 @@
             justify-content: center;
             align-items: flex-start;
             border: none;
-            user-select: text;
-            position: relative;
         }
 
         #editor-content {
@@ -162,12 +135,11 @@
             width: 100%;
             text-align: left;
             padding: 20px;
-            color: #333;
             min-height: 100%;
             outline: none;
             border: none;
-            user-select: text;
             font-family: 'Roboto', sans-serif;
+            color: #333;
         }
 
         #editor-content:empty:before {
@@ -175,6 +147,24 @@
             color: #aaa;
             font-style: italic;
             pointer-events: none;
+        }
+
+        .dark-mode {
+            background: #222;
+            color: #fff;
+        }
+
+        .dark-mode #toolbar {
+            background: #333;
+        }
+
+        .dark-mode #editor {
+            background: #444;
+            color: #fff;
+        }
+
+        .dark-mode #editor-content {
+            color: white;
         }
     </style>
 </head>
@@ -200,9 +190,9 @@
 
             <div class="toolbar-right">
                 <button onclick="copyText()"><span class="material-symbols-outlined">content_copy</span></button>
-                <button class="download-button" onclick="downloadText()"><span class="material-symbols-outlined">download</span> TXT</button>
-                <button class="download-button" onclick="downloadPDF()"><span class="material-symbols-outlined">download</span> PDF</button>
-                <button onclick="toggleDarkMode()" id="dark-mode-btn"><span class="material-symbols-outlined">dark_mode</span></button>
+                <button onclick="downloadText()"><span class="material-symbols-outlined">download</span> TXT</button>
+                <button onclick="downloadPDF()"><span class="material-symbols-outlined">download</span> PDF</button>
+                <button onclick="toggleDarkMode()"><span class="material-symbols-outlined">dark_mode</span></button>
                 <button onclick="clearText()"><span class="material-symbols-outlined">delete</span></button>
             </div>
         </div>
@@ -211,5 +201,52 @@
             <div id="editor-content" contenteditable="true"></div>
         </div>
     </div>
+
+    <script>
+        function formatText(command) {
+            document.execCommand(command, false, null);
+        }
+
+        function removeFormatting() {
+            document.execCommand('removeFormat', false, null);
+        }
+
+        function changeTextColor(color) {
+            document.execCommand("foreColor", false, color);
+        }
+
+        function changeFont() {
+            let selectedFont = document.getElementById("font-selector").value;
+            document.getElementById("editor-content").style.fontFamily = selectedFont;
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle("dark-mode");
+        }
+
+        function clearText() {
+            document.getElementById("editor-content").innerHTML = "";
+        }
+
+        function copyText() {
+            navigator.clipboard.writeText(document.getElementById("editor-content").innerText);
+        }
+
+        function downloadText() {
+            const text = document.getElementById("editor-content").innerText;
+            const blob = new Blob([text], { type: "text/plain" });
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = "document.txt";
+            a.click();
+        }
+
+        function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF();
+            pdf.text(document.getElementById("editor-content").innerText, 10, 10);
+            pdf.save("document.pdf");
+        }
+    </script>
 </body>
 </html>
