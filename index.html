@@ -176,34 +176,6 @@
             font-style: italic;
             pointer-events: none;
         }
-
-        /* Dark mode styles */
-        .dark-mode {
-            background: #222 !important;
-            color: #fff !important;
-        }
-
-        .dark-mode #toolbar {
-            background: #333 !important;
-        }
-
-        .dark-mode #editor {
-            background: #444 !important;
-            color: #fff !important;
-        }
-
-        .dark-mode #editor-content {
-            color: white !important;
-        }
-
-        .dark-mode button {
-            background: #555 !important;
-            color: #fff !important;
-        }
-
-        .dark-mode button:hover {
-            background: #666 !important;
-        }
     </style>
 </head>
 <body>
@@ -239,28 +211,5 @@
             <div id="editor-content" contenteditable="true"></div>
         </div>
     </div>
-
-    <script>
-        function copyText() {
-            navigator.clipboard.writeText(document.getElementById("editor-content").innerText);
-            alert("Text copied!");
-        }
-
-        function downloadText() {
-            const text = document.getElementById("editor-content").innerText;
-            const blob = new Blob([text], { type: "text/plain" });
-            const a = document.createElement("a");
-            a.href = URL.createObjectURL(blob);
-            a.download = "document.txt";
-            a.click();
-        }
-
-        function downloadPDF() {
-            const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF();
-            pdf.text(document.getElementById("editor-content").innerText, 10, 10);
-            pdf.save("document.pdf");
-        }
-    </script>
 </body>
 </html>
