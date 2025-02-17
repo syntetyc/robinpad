@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dibujar y Exportar</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        canvas {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+        }
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+        }
+        .control-button {
+            background: #f0f0f0;
+            border: none;
+            cursor: pointer;
+            font-size: 24px;
+            padding: 12px;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .control-button:hover {
+            background: #d0d0d0;
+        }
+        .color-picker-container {
+            position: relative;
+        }
+        .color-picker {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: none;
+            opacity: 0;
+            cursor: pointer;
+        }
+        #colorButton {
+            background: black;
+            color: white;
+        }
+        .thickness-indicator {
+            background: black;
+            border-radius: 50%;
+            display: block;
+            margin: auto;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="drawingCanvas"></canvas>
+    <div class="controls">
+        <div class="color-picker-container">
+            <button id="colorButton" class="control-button" onclick="document.getElementById('colorPicker').click();"><span class="material-icons">palette</span></button>
+            <input type="color" id="colorPicker" class="color-picker" onchange="changeColor()">
+        </div>
+        <button id="thicknessButton" class="control-button" onclick="toggleThickness()">
+            <span class="thickness-indicator" id="thicknessIndicator" style="width: 10px; height: 10px;"></span>
+        </button>
+        <button class="control-button" onclick="exportToJPG()"><span class="material-icons">image</span></button>
+        <button class="control-button" onclick="exportToPDF()"><span class="material-icons">picture_as_pdf</span></button>
+        <button class="control-button" onclick="clearCanvas()"><span class="material-icons">delete</span></button>
+    </div>
+    
+    <script>
+        const canvas = document.getElementById("drawingCanvas");
+        const ctx = canvas.getContext("2d");
+        let drawing = false;
+        let color = "black";
+        let lineWidth = 5;
+        const thicknessLevels = [5, 10, 15];
+        
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        
+        resizeCanvas();
+        window.addEventListener("resize", resizeCanvas);
+        
+        canvas.addEventListener("mousedown", (event) => {
+            drawing = true;
+            ctx.beginPath();
+            ctx.moveTo(event.clientX, event.clientY);
+        });
+        
+        canvas.addEventListener("mouseup", () => drawing = false);
+        canvas.addEventListener("mouseout", () => drawing = false);
+        canvas.addEventListener("mousemove", draw);
+        
+        function draw(event) {
+            if (!drawing) return;
+            ctx.lineWidth = lineWidth;
+            ctx.lineCap = "round";
+            ctx.lineJoin = "round";
+            ctx.strokeStyle = color;
+            
+            ctx.lineTo(event.clientX, event.clientY);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(event.clientX, event.clientY);
+        }
+        
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+        
+        function exportToJPG() {
+            const link = document.createElement("a");
+            link.href = canvas.toDataURL("image/jpeg");
+            link.download = "dibujo.jpg";
+            link.click();
+        }
+        
+        function exportToPDF() {
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF();
+            const imgData = canvas.toDataURL("image/jpeg", 1.0);
+            pdf.addImage(imgData, "JPEG", 10, 10, 180, 120);
+            pdf.save("dibujo.pdf");
+        }
+        
+        function changeColor() {
+            color = document.getElementById("colorPicker").value;
+            document.getElementById("colorButton").style.background = color;
+            document.getElementById("colorButton").style.color = (getLuminance(color) < 0.5) ? "white" : "black";
+        }
+        
+        function toggleThickness() {
+            let index = thicknessLevels.indexOf(lineWidth);
+            lineWidth = thicknessLevels[(index + 1) % thicknessLevels.length];
+            document.getElementById("thicknessIndicator").style.width = lineWidth + "px";
+            document.getElementById("thicknessIndicator").style.height = lineWidth + "px";
+        }
+        
+        function getLuminance(hex) {
+            let c = hex.substring(1).split('');
+            if (c.length === 3) {
+                c = [c[0]+c[0], c[1]+c[1], c[2]+c[2]];
+            }
+            let r = parseInt(c[0]+c[1], 16) / 255;
+            let g = parseInt(c[2]+c[3], 16) / 255;
+            let b = parseInt(c[4]+c[5], 16) / 255;
+            return (0.299 * r + 0.587 * g + 0.114 * b);
+        }
+    </script>
+</body>
+</html>
