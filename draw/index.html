@@ -28,10 +28,11 @@
         }
         .logo {
             position: absolute;
-            top: 10px;
-            left: 10px;
-            width: 50px;
-            height: 50px;
+            top: 0;
+            left: 0;
+            width: 78px;
+            height: 78px;
+            z-index: 10;
         }
         .controls {
             position: absolute;
@@ -40,6 +41,7 @@
             transform: translateX(-50%);
             display: flex;
             gap: 10px;
+            z-index: 10;
         }
         .control-button {
             background: #f0f0f0;
@@ -84,7 +86,7 @@
     </style>
 </head>
 <body>
-    <img src="imgs/logo_icon.jpg" alt="Logo" class="logo">
+    <img src="https://www.robinpad.com/imgs/logo_icon.jpg" alt="Logo" class="logo">
     <canvas id="drawingCanvas"></canvas>
     <div class="controls">
         <div class="color-picker-container">
