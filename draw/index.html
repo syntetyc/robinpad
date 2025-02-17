@@ -111,19 +111,11 @@
         let thicknessIndex = 0;
 
         function resizeCanvas() {
-            const tempCanvas = document.createElement("canvas");
-            tempCanvas.width = canvas.width;
-            tempCanvas.height = canvas.height;
-            const tempCtx = tempCanvas.getContext("2d");
-            tempCtx.drawImage(canvas, 0, 0);
-            
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
             ctx.fillStyle = "#ffffff";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(tempCanvas, 0, 0);
         }
-        
         resizeCanvas();
         window.addEventListener("resize", resizeCanvas);
         
@@ -148,6 +140,21 @@
             ctx.stroke();
             ctx.beginPath();
             ctx.moveTo(event.clientX, event.clientY);
+        }
+        
+        function exportToJPG() {
+            const link = document.createElement("a");
+            link.href = canvas.toDataURL("image/jpeg");
+            link.download = "dibujo.jpg";
+            link.click();
+        }
+        
+        function exportToPDF() {
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF();
+            const imgData = canvas.toDataURL("image/png");
+            pdf.addImage(imgData, "PNG", 10, 10, 180, 120);
+            pdf.save("dibujo.pdf");
         }
         
         function clearCanvas() {
