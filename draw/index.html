@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RobinPad - Draw</title>
+    <title>RobiPad - Draw</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <style>
@@ -145,7 +145,7 @@
         function exportToJPG() {
             const link = document.createElement("a");
             link.href = canvas.toDataURL("image/jpeg");
-            link.download = "dibujo.jpg";
+            link.download = "Robinpad-Draw.jpg";
             link.click();
         }
         
@@ -154,7 +154,7 @@
             const pdf = new jsPDF();
             const imgData = canvas.toDataURL("image/png");
             pdf.addImage(imgData, "PNG", 10, 10, 180, 120);
-            pdf.save("dibujo.pdf");
+            pdf.save("Robinpad-Draw.pdf");
         }
         
         function clearCanvas() {
