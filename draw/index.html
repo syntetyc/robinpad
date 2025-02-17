@@ -99,18 +99,7 @@
         let lineWidth = 5;
         const thicknessLevels = [5, 10, 15];
         let thicknessIndex = 0;
-        let savedImageData = null;
-
-        function saveCanvasState() {
-            savedImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        }
-
-        function restoreCanvasState() {
-            if (savedImageData) {
-                ctx.putImageData(savedImageData, 0, 0);
-            }
-        }
-
+        
         function resizeCanvas() {
             const tempCanvas = document.createElement("canvas");
             tempCanvas.width = canvas.width;
@@ -128,16 +117,6 @@
         resizeCanvas();
         window.addEventListener("resize", resizeCanvas);
         
-        canvas.addEventListener("mousedown", (event) => {
-            drawing = true;
-            ctx.beginPath();
-            ctx.moveTo(event.clientX, event.clientY);
-        });
-        
-        canvas.addEventListener("mouseup", () => drawing = false);
-        canvas.addEventListener("mouseout", () => drawing = false);
-        canvas.addEventListener("mousemove", draw);
-        
         function draw(event) {
             if (!drawing) return;
             ctx.lineWidth = lineWidth;
@@ -149,8 +128,37 @@
             ctx.stroke();
             ctx.beginPath();
             ctx.moveTo(event.clientX, event.clientY);
-            saveCanvasState();
         }
+        
+        function exportToJPG() {
+            const link = document.createElement("a");
+            link.href = canvas.toDataURL("image/jpeg", 1.0);
+            link.download = "dibujo.jpg";
+            link.click();
+        }
+        
+        function exportToPDF() {
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF();
+            const imgData = canvas.toDataURL("image/png");
+            pdf.addImage(imgData, "PNG", 10, 10, 180, 120);
+            pdf.save("dibujo.pdf");
+        }
+        
+        function clearCanvas() {
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+        
+        canvas.addEventListener("mousedown", (event) => {
+            drawing = true;
+            ctx.beginPath();
+            ctx.moveTo(event.clientX, event.clientY);
+        });
+        
+        canvas.addEventListener("mouseup", () => drawing = false);
+        canvas.addEventListener("mouseout", () => drawing = false);
+        canvas.addEventListener("mousemove", draw);
         
         function changeColor() {
             color = document.getElementById("colorPicker").value;
@@ -163,17 +171,6 @@
             lineWidth = thicknessLevels[thicknessIndex];
             document.getElementById("thicknessIndicator").style.width = lineWidth + "px";
             document.getElementById("thicknessIndicator").style.height = lineWidth + "px";
-        }
-
-        function getLuminance(hex) {
-            let c = hex.substring(1).split('');
-            if (c.length === 3) {
-                c = [c[0]+c[0], c[1]+c[1], c[2]+c[2]];
-            }
-            let r = parseInt(c[0]+c[1], 16) / 255;
-            let g = parseInt(c[2]+c[3], 16) / 255;
-            let b = parseInt(c[4]+c[5], 16) / 255;
-            return (0.299 * r + 0.587 * g + 0.114 * b);
         }
     </script>
 </body>
