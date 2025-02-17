@@ -31,6 +31,29 @@
             height: 78px;
             z-index: 10;
         }
+        .draw-button {
+                    position: absolute;
+                    top: 90px; /* Ajustado para estar justo debajo del logo */
+                    left: 14px;
+                    background: #f0f0f0;
+                    border: none;
+                    cursor: pointer;
+                    font-size: 24px;
+                    padding: 12px;
+                    border-radius: 50%;
+                    width: 50px;
+                    height: 50px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    transition: background 0.2s;
+                    text-decoration: none;
+                    color: black;
+                    z-index: 11;
+                }
+     .draw-button:hover {
+                    background: #d0d0d0;
+                }
         .text-container {
             position: relative;
             width: 80%; /* Área de texto más ancha */
@@ -89,6 +112,7 @@
 </head>
 <body>
     <img src="https://www.robinpad.com/imgs/logo_icon.jpg" alt="Logo" class="logo">
+    <a href="https://www.robinpad.com/draw" class="draw-button"><span class="material-icons">draw</span></a>
     <div class="text-container">
         <div id="placeholder" class="placeholder">Start writing</div>
         <div id="textArea" class="text-area" contenteditable="true"></div>
