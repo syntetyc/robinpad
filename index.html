@@ -1,11 +1,12 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RobinPad - Draw</title>
+    <title>RobinPad - Just Write</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;700&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -13,18 +14,14 @@
             box-sizing: border-box;
         }
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Source Code Pro', monospace;
             overflow: hidden;
             background: #ffffff;
-        }
-        canvas {
-            display: block;
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             height: 100vh;
-            background: #ffffff;
         }
         .logo {
             position: absolute;
@@ -33,6 +30,31 @@
             width: 78px;
             height: 78px;
             z-index: 10;
+        }
+        .text-container {
+            position: relative;
+            width: 80%; /* Área de texto más ancha */
+            height: 70vh;
+        }
+        .text-area {
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+            font-size: 16px;
+            border: none;
+            outline: none;
+            resize: none;
+            text-align: left;
+            line-height: 1.6;
+            background: transparent;
+        }
+        .placeholder {
+            position: absolute;
+            top: 20px; /* Ajuste del placeholder */
+            left: 20px;
+            font-size: 14px;
+            color: gray;
+            pointer-events: none;
         }
         .controls {
             position: absolute;
@@ -55,123 +77,79 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: border 0.2s;
         }
         .control-button:hover {
             background: #d0d0d0;
         }
-        .color-picker-container {
-            position: relative;
-        }
-        .color-picker {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            border: none;
-            opacity: 0;
-            cursor: pointer;
-        }
-        #colorButton {
-            background: black;
-            color: white;
-        }
-        .thickness-indicator {
-            background: black;
-            border-radius: 50%;
-            display: block;
-            margin: auto;
+        .active {
+            border: 2px solid #555;
         }
     </style>
 </head>
 <body>
     <img src="https://www.robinpad.com/imgs/logo_icon.jpg" alt="Logo" class="logo">
-    <canvas id="drawingCanvas"></canvas>
+    <div class="text-container">
+        <div id="placeholder" class="placeholder">Start writing</div>
+        <div id="textArea" class="text-area" contenteditable="true"></div>
+    </div>
     <div class="controls">
-        <div class="color-picker-container">
-            <button id="colorButton" class="control-button" onclick="document.getElementById('colorPicker').click();"><span class="material-icons">palette</span></button>
-            <input type="color" id="colorPicker" class="color-picker" onchange="changeColor()">
-        </div>
-        <button id="thicknessButton" class="control-button" onclick="toggleThickness()">
-            <span class="thickness-indicator" id="thicknessIndicator" style="width: 10px; height: 10px;"></span>
-        </button>
-        <button class="control-button" onclick="exportToJPG()"><span class="material-icons">image</span></button>
+        <button id="boldButton" class="control-button" onclick="applyFormat('bold', this)"><span class="material-icons">format_bold</span></button>
+        <button id="italicButton" class="control-button" onclick="applyFormat('italic', this)"><span class="material-icons">format_italic</span></button>
+        <button id="underlineButton" class="control-button" onclick="applyFormat('underline', this)"><span class="material-icons">format_underlined</span></button>
+        <button class="control-button" onclick="addSeparator()"><span class="material-icons">horizontal_rule</span></button>
         <button class="control-button" onclick="exportToPDF()"><span class="material-icons">picture_as_pdf</span></button>
-        <button class="control-button" onclick="clearCanvas()"><span class="material-icons">delete</span></button>
+        <button class="control-button" onclick="exportToTXT()"><span class="material-icons">description</span></button>
+        <button class="control-button" onclick="clearText()"><span class="material-icons">delete</span></button>
     </div>
     
     <script>
-        const canvas = document.getElementById("drawingCanvas");
-        const ctx = canvas.getContext("2d");
-        let drawing = false;
-        let color = "black";
-        let lineWidth = 5;
-        const thicknessLevels = [5, 10, 15];
-        let thicknessIndex = 0;
-
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            ctx.fillStyle = "#ffffff";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-        }
-        resizeCanvas();
-        window.addEventListener("resize", resizeCanvas);
+        const textArea = document.getElementById("textArea");
+        const placeholder = document.getElementById("placeholder");
         
-        canvas.addEventListener("mousedown", (event) => {
-            drawing = true;
-            ctx.beginPath();
-            ctx.moveTo(event.clientX, event.clientY);
+        textArea.addEventListener("input", () => {
+            placeholder.style.display = textArea.innerHTML.trim() ? "none" : "block";
         });
         
-        canvas.addEventListener("mouseup", () => drawing = false);
-        canvas.addEventListener("mouseout", () => drawing = false);
-        canvas.addEventListener("mousemove", draw);
-        
-        function draw(event) {
-            if (!drawing) return;
-            ctx.lineWidth = lineWidth;
-            ctx.lineCap = "round";
-            ctx.lineJoin = "round";
-            ctx.strokeStyle = color;
-            
-            ctx.lineTo(event.clientX, event.clientY);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(event.clientX, event.clientY);
+        function applyFormat(command, button) {
+            document.execCommand(command, false, null);
+            setTimeout(() => {
+                const isActive = document.queryCommandState(command);
+                button.classList.toggle("active", isActive);
+            }, 10);
         }
         
-        function exportToJPG() {
-            const link = document.createElement("a");
-            link.href = canvas.toDataURL("image/jpeg");
-            link.download = "dibujo.jpg";
-            link.click();
+        function addSeparator() {
+            const separator = document.createElement("div");
+            separator.textContent = "----------------------------------------";
+            separator.style.margin = "5px 0";
+            separator.style.textAlign = "center";
+            separator.style.color = "gray";
+            separator.contentEditable = "false";
+            
+            textArea.appendChild(separator);
+            textArea.appendChild(document.createElement("br"));
+        }
+        
+        function clearText() {
+            textArea.innerHTML = "";
+            placeholder.style.display = "block";
         }
         
         function exportToPDF() {
             const { jsPDF } = window.jspdf;
             const pdf = new jsPDF();
-            const imgData = canvas.toDataURL("image/png");
-            pdf.addImage(imgData, "PNG", 10, 10, 180, 120);
-            pdf.save("dibujo.pdf");
+            pdf.text(textArea.innerText, 10, 10);
+            pdf.save("Robinpad-JustWrite.pdf");
         }
         
-        function clearCanvas() {
-            ctx.fillStyle = "#ffffff";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-        }
-        
-        function changeColor() {
-            color = document.getElementById("colorPicker").value;
-            document.getElementById("colorButton").style.background = color;
-        }
-        
-        function toggleThickness() {
-            thicknessIndex = (thicknessIndex + 1) % thicknessLevels.length;
-            lineWidth = thicknessLevels[thicknessIndex];
-            document.getElementById("thicknessIndicator").style.width = lineWidth + "px";
-            document.getElementById("thicknessIndicator").style.height = lineWidth + "px";
+        function exportToTXT() {
+            const text = textArea.innerText;
+            const blob = new Blob([text], { type: "text/plain" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "Robinpad-JustWrite.txt";
+            link.click();
         }
     </script>
 </body>
