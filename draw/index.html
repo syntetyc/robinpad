@@ -15,6 +15,7 @@
         body {
             font-family: Arial, sans-serif;
             overflow: hidden;
+            background: #ffffff; /* Fondo blanco para asegurar coherencia en exportación */
         }
         canvas {
             display: block;
@@ -23,6 +24,7 @@
             left: 0;
             width: 100vw;
             height: 100vh;
+            background: #ffffff; /* Fondo blanco para exportación */
         }
         .controls {
             position: absolute;
@@ -77,6 +79,7 @@
 <body>
     <canvas id="drawingCanvas"></canvas>
     <div class="controls">
+        <button class="control-button" onclick="clearCanvas()"><span class="material-icons">delete</span></button>
         <div class="color-picker-container">
             <button id="colorButton" class="control-button" onclick="document.getElementById('colorPicker').click();"><span class="material-icons">palette</span></button>
             <input type="color" id="colorPicker" class="color-picker" onchange="changeColor()">
@@ -96,10 +99,12 @@
         let color = "black";
         let lineWidth = 5;
         const thicknessLevels = [5, 10, 15];
-        
+
         function resizeCanvas() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
         }
         
         resizeCanvas();
@@ -129,12 +134,21 @@
         }
         
         function clearCanvas() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
         }
         
         function exportToJPG() {
+            const tempCanvas = document.createElement("canvas");
+            tempCanvas.width = canvas.width;
+            tempCanvas.height = canvas.height;
+            const tempCtx = tempCanvas.getContext("2d");
+            tempCtx.fillStyle = "#ffffff";
+            tempCtx.fillRect(0, 0, canvas.width, canvas.height);
+            tempCtx.drawImage(canvas, 0, 0);
+            
             const link = document.createElement("a");
-            link.href = canvas.toDataURL("image/jpeg");
+            link.href = tempCanvas.toDataURL("image/jpeg");
             link.download = "dibujo.jpg";
             link.click();
         }
@@ -142,33 +156,17 @@
         function exportToPDF() {
             const { jsPDF } = window.jspdf;
             const pdf = new jsPDF();
-            const imgData = canvas.toDataURL("image/jpeg", 1.0);
+            const tempCanvas = document.createElement("canvas");
+            tempCanvas.width = canvas.width;
+            tempCanvas.height = canvas.height;
+            const tempCtx = tempCanvas.getContext("2d");
+            tempCtx.fillStyle = "#ffffff";
+            tempCtx.fillRect(0, 0, canvas.width, canvas.height);
+            tempCtx.drawImage(canvas, 0, 0);
+            
+            const imgData = tempCanvas.toDataURL("image/jpeg", 1.0);
             pdf.addImage(imgData, "JPEG", 10, 10, 180, 120);
             pdf.save("dibujo.pdf");
-        }
-        
-        function changeColor() {
-            color = document.getElementById("colorPicker").value;
-            document.getElementById("colorButton").style.background = color;
-            document.getElementById("colorButton").style.color = (getLuminance(color) < 0.5) ? "white" : "black";
-        }
-        
-        function toggleThickness() {
-            let index = thicknessLevels.indexOf(lineWidth);
-            lineWidth = thicknessLevels[(index + 1) % thicknessLevels.length];
-            document.getElementById("thicknessIndicator").style.width = lineWidth + "px";
-            document.getElementById("thicknessIndicator").style.height = lineWidth + "px";
-        }
-        
-        function getLuminance(hex) {
-            let c = hex.substring(1).split('');
-            if (c.length === 3) {
-                c = [c[0]+c[0], c[1]+c[1], c[2]+c[2]];
-            }
-            let r = parseInt(c[0]+c[1], 16) / 255;
-            let g = parseInt(c[2]+c[3], 16) / 255;
-            let b = parseInt(c[4]+c[5], 16) / 255;
-            return (0.299 * r + 0.587 * g + 0.114 * b);
         }
     </script>
 </body>
