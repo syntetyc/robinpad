@@ -26,6 +26,13 @@
             height: 100vh;
             background: #ffffff;
         }
+        .logo {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 50px;
+            height: 50px;
+        }
         .controls {
             position: absolute;
             bottom: 20px;
@@ -74,34 +81,10 @@
             display: block;
             margin: auto;
         }
-        /*---
-Header
----*/
-
-header {
-  background-image: url(imgs/logo_icon.jpg);
-  background-repeat: no-repeat;
-  padding: 2em 2em 0 0;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  z-index: 2;
-}
-
-.logo {
-  background-image: url(imgs/logo_icon.jpg);
-  background-position: left top;
-  position: fixed;
-  top: 0;
-  left: 0;
-}
-
     </style>
 </head>
 <body>
-  <div id="header">
-  <div id="logo"></div></div>
+    <img src="imgs/logo_icon.jpg" alt="Logo" class="logo">
     <canvas id="drawingCanvas"></canvas>
     <div class="controls">
         <div class="color-picker-container">
@@ -124,7 +107,7 @@ header {
         let lineWidth = 5;
         const thicknessLevels = [5, 10, 15];
         let thicknessIndex = 0;
-        
+
         function resizeCanvas() {
             const tempCanvas = document.createElement("canvas");
             tempCanvas.width = canvas.width;
@@ -142,6 +125,16 @@ header {
         resizeCanvas();
         window.addEventListener("resize", resizeCanvas);
         
+        canvas.addEventListener("mousedown", (event) => {
+            drawing = true;
+            ctx.beginPath();
+            ctx.moveTo(event.clientX, event.clientY);
+        });
+        
+        canvas.addEventListener("mouseup", () => drawing = false);
+        canvas.addEventListener("mouseout", () => drawing = false);
+        canvas.addEventListener("mousemove", draw);
+        
         function draw(event) {
             if (!drawing) return;
             ctx.lineWidth = lineWidth;
@@ -155,40 +148,14 @@ header {
             ctx.moveTo(event.clientX, event.clientY);
         }
         
-        function exportToJPG() {
-            const link = document.createElement("a");
-            link.href = canvas.toDataURL("image/jpeg", 1.0);
-            link.download = "dibujo.jpg";
-            link.click();
-        }
-        
-        function exportToPDF() {
-            const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF();
-            const imgData = canvas.toDataURL("image/png");
-            pdf.addImage(imgData, "PNG", 10, 10, 180, 120);
-            pdf.save("dibujo.pdf");
-        }
-        
         function clearCanvas() {
             ctx.fillStyle = "#ffffff";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
         }
         
-        canvas.addEventListener("mousedown", (event) => {
-            drawing = true;
-            ctx.beginPath();
-            ctx.moveTo(event.clientX, event.clientY);
-        });
-        
-        canvas.addEventListener("mouseup", () => drawing = false);
-        canvas.addEventListener("mouseout", () => drawing = false);
-        canvas.addEventListener("mousemove", draw);
-        
         function changeColor() {
             color = document.getElementById("colorPicker").value;
             document.getElementById("colorButton").style.background = color;
-            document.getElementById("colorButton").style.color = getLuminance(color) < 0.5 ? "white" : "black";
         }
         
         function toggleThickness() {
