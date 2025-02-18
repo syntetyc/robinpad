@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>RobiPad - Draw</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
@@ -11,6 +11,7 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            touch-action: none; /* Evita el desplazamiento y zoom en móviles */
         }
         body {
             font-family: Arial, sans-serif;
@@ -36,7 +37,7 @@
         }
         .text-button {
             position: absolute;
-            top: 10px; /* Ajustado para estar justo debajo del logo */
+            top: 10px;
             right: 14px;
             background: #f0f0f0;
             border: none;
@@ -109,8 +110,8 @@
     </style>
 </head>
 <body>
-    <img src="https://www.robinpad.com/imgs/logo_icon.jpg" alt="Logo" class="logo">
-        <a href="https://www.robinpad.com/" class="text-button"><span class="material-icons">title</span></a>
+    <a href="https://www.robinpad.com/"><img src="https://www.robinpad.com/imgs/logo_icon.jpg" alt="Logo" class="logo"></a>
+    <a href="https://www.robinpad.com/write/" class="text-button"><span class="material-icons">title</span></a>
     <canvas id="drawingCanvas"></canvas>
     <div class="controls">
         <div class="color-picker-container">
@@ -142,17 +143,38 @@
         }
         resizeCanvas();
         window.addEventListener("resize", resizeCanvas);
-        
-        canvas.addEventListener("mousedown", (event) => {
+
+        // Eventos de ratón
+        canvas.addEventListener("mousedown", startDrawing);
+        canvas.addEventListener("mouseup", stopDrawing);
+        canvas.addEventListener("mouseout", stopDrawing);
+        canvas.addEventListener("mousemove", draw);
+
+        // Eventos táctiles
+        canvas.addEventListener("touchstart", startDrawingTouch);
+        canvas.addEventListener("touchend", stopDrawing);
+        canvas.addEventListener("touchcancel", stopDrawing);
+        canvas.addEventListener("touchmove", drawTouch);
+
+        function startDrawing(event) {
             drawing = true;
             ctx.beginPath();
             ctx.moveTo(event.clientX, event.clientY);
-        });
-        
-        canvas.addEventListener("mouseup", () => drawing = false);
-        canvas.addEventListener("mouseout", () => drawing = false);
-        canvas.addEventListener("mousemove", draw);
-        
+        }
+
+        function startDrawingTouch(event) {
+            event.preventDefault(); // Evita el desplazamiento
+            const touch = event.touches[0];
+            drawing = true;
+            ctx.beginPath();
+            ctx.moveTo(touch.clientX, touch.clientY);
+        }
+
+        function stopDrawing() {
+            drawing = false;
+            ctx.beginPath();
+        }
+
         function draw(event) {
             if (!drawing) return;
             ctx.lineWidth = lineWidth;
@@ -165,14 +187,29 @@
             ctx.beginPath();
             ctx.moveTo(event.clientX, event.clientY);
         }
-        
+
+        function drawTouch(event) {
+            event.preventDefault(); // Evita el desplazamiento
+            if (!drawing) return;
+            const touch = event.touches[0];
+            ctx.lineWidth = lineWidth;
+            ctx.lineCap = "round";
+            ctx.lineJoin = "round";
+            ctx.strokeStyle = color;
+            
+            ctx.lineTo(touch.clientX, touch.clientY);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(touch.clientX, touch.clientY);
+        }
+
         function exportToJPG() {
             const link = document.createElement("a");
             link.href = canvas.toDataURL("image/jpeg");
             link.download = "Robinpad-Draw.jpg";
             link.click();
         }
-        
+
         function exportToPDF() {
             const { jsPDF } = window.jspdf;
             const pdf = new jsPDF();
@@ -180,17 +217,17 @@
             pdf.addImage(imgData, "PNG", 10, 10, 180, 120);
             pdf.save("Robinpad-Draw.pdf");
         }
-        
+
         function clearCanvas() {
             ctx.fillStyle = "#ffffff";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
         }
-        
+
         function changeColor() {
             color = document.getElementById("colorPicker").value;
             document.getElementById("colorButton").style.background = color;
         }
-        
+
         function toggleThickness() {
             thicknessIndex = (thicknessIndex + 1) % thicknessLevels.length;
             lineWidth = thicknessLevels[thicknessIndex];
