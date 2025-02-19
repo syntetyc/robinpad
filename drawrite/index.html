@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RobinPad - Draw</title>
+
+    <!-- Librerías necesarias -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/jpg" href="/imgs/logo_icon.jpg">
+
+    <!-- Open Graph (para compartir en redes) -->
+    <meta property="og:title" content="RobinPad, Minimal Writing and Drawing Tools">
+    <meta property="og:description" content="A minimal and simple set of drawing and writing tools, just write or draw and export">
+    <meta property="og:image" content="https://robinpad.com/images/share-img.jpg">
+    <meta property="og:url" content="https://robinpad.com">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="RobinPad, Minimal Writing and Drawing Tools">
+    <meta name="twitter:description" content="A minimal and simple set of drawing and writing tools, just write or draw and export">
+    <meta name="twitter:image" content="https://robinpad.com/images/share-img.jpg">
+
+    <!-- Estilos -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+            background: #ffffff;
+        }
+        #tldraw-container {
+            width: 100vw;
+            height: 100vh;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        .logo {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 78px;
+            height: 78px;
+            z-index: 10;
+        }
+        .text-button {
+            position: absolute;
+            top: 10px;
+            right: 14px;
+            background: #f0f0f0;
+            border: none;
+            cursor: pointer;
+            font-size: 24px;
+            padding: 12px;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: black;
+            z-index: 11;
+        }
+        .text-button:hover {
+            background: #d0d0d0;
+        }
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+        .control-button {
+            background: #f0f0f0;
+            border: none;
+            cursor: pointer;
+            font-size: 24px;
+            padding: 12px;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .control-button:hover {
+            background: #d0d0d0;
+        }
+    </style>
+</head>
+<body>
+
+    <a href="https://www.robinpad.com/"><img src="https://www.robinpad.com/imgs/logo_icon.jpg" alt="Logo" class="logo"></a>
+    <a href="https://www.robinpad.com/write/" class="text-button"><span class="material-icons">title</span></a>
+
+    <!-- Contenedor de tldraw -->
+    <div id="tldraw-container"></div>
+
+    <!-- Controles -->
+    <div class="controls">
+        <button class="control-button" id="colorButton"><span class="material-icons">palette</span></button>
+        <button class="control-button" id="thicknessButton"><span class="material-icons">brush</span></button>
+        <button class="control-button" id="clearButton"><span class="material-icons">delete</span></button>
+        <button class="control-button" id="exportButton"><span class="material-icons">image</span></button>
+        <button class="control-button" id="textButton"><span class="material-icons">text_fields</span></button>
+    </div>
+
+    <!-- Librerías -->
+    <script type="module">
+        import { createTldraw } from "https://esm.sh/@tldraw/tldraw";
+
+        // Inicializar tldraw correctamente
+        let app;
+        async function initTldraw() {
+            app = await createTldraw(document.getElementById("tldraw-container"));
+        }
+        initTldraw();
+
+        // Botón de cambio de color
+        document.getElementById("colorButton").addEventListener("click", () => {
+            const newColor = prompt("Elige un color en formato HEX (#000000):", "#000000");
+            if (newColor && app) {
+                app.setCurrentStyle({ stroke: newColor });
+            }
+        });
+
+        // Botón de cambio de grosor
+        document.getElementById("thicknessButton").addEventListener("click", () => {
+            if (!app) return;
+            const sizes = [2, 4, 8, 16];
+            const currentSize = app.getCurrentStyle().strokeWidth || 2;
+            const newSize = sizes[(sizes.indexOf(currentSize) + 1) % sizes.length];
+            app.setCurrentStyle({ strokeWidth: newSize });
+        });
+
+        // Botón de borrar
+        document.getElementById("clearButton").addEventListener("click", () => {
+            if (app && confirm("¿Borrar todo el dibujo?")) {
+                app.deleteAllShapes();
+            }
+        });
+
+        // Botón de exportar imagen
+        document.getElementById("exportButton").addEventListener("click", async () => {
+            if (!app) return;
+            const image = await app.exportAs("png");
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(image);
+            link.download = "Robinpad-Draw.png";
+            link.click();
+        });
+
+        // Botón de agregar texto
+        document.getElementById("textButton").addEventListener("click", () => {
+            if (app) app.selectTool("text");
+        });
+
+    </script>
+
+</body>
+</html>
